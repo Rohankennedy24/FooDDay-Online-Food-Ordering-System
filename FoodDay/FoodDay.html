@@ -1,0 +1,1896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FOODDAY - Order Delicious Food Online</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #000000;
+            --secondary: #3200fc;
+            --tertiary: #000000;
+            --dark: #000000;
+            --light: #ffffff;
+            --accent: #3c00ff;
+            --rainbow-gradient: linear-gradient(45deg, #ff4757, #2ed573, #ffa502, #3742fa, #ff6b9d);
+        }
+
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        /* Page Sections */
+        .page-section {
+            display: none;
+        }
+
+        .page-section.active {
+            display: block;
+        }
+
+        /* Header Styles */
+        header {
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo i {
+            color: var(--primary);
+            font-size: 28px;
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .logo h1 {
+            font-size: 24px;
+            background: var(--rainbow-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 25px;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 500;
+            transition: color 0.3s;
+            position: relative;
+            cursor: pointer;
+        }
+
+        nav a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -5px;
+            left: 0;
+            background: var(--rainbow-gradient);
+            transition: width 0.3s;
+        }
+
+        nav a:hover::after {
+            width: 100%;
+        }
+
+        nav a:hover {
+            color: var(--primary);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .cart-icon {
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .cart-icon:hover {
+            transform: scale(1.1);
+        }
+
+        .cart-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--rainbow-gradient);
+            background-size: 200% 200%;
+            animation: shimmer 2s linear infinite;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 30px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #ff3742;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #1abc9c;
+            transform: translateY(-2px);
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1001;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 400px;
+            position: relative;
+            animation: modalSlide 0.3s ease-out;
+        }
+
+        @keyframes modalSlide {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .close {
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: var(--primary);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        /* Hero Section (Common for pages) */
+        .hero {
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: white;
+            padding: 100px 0;
+            text-align: center;
+            position: relative;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--rainbow-gradient);
+            opacity: 0.1;
+            animation: rainbowShift 5s ease-in-out infinite;
+        }
+
+        @keyframes rainbowShift {
+            0%, 100% { opacity: 0.1; }
+            50% { opacity: 0.2; }
+        }
+
+        .hero-content {
+            max-width: 700px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero h2 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .hero p {
+            font-size: 20px;
+            margin-bottom: 30px;
+        }
+
+        .search-box {
+            display: flex;
+            max-width: 500px;
+            margin: 0 auto;
+            background: rgba(255,255,255,0.1);
+            border-radius: 30px;
+            overflow: hidden;
+        }
+
+        .search-box input {
+            flex: 1;
+            padding: 15px 20px;
+            border: none;
+            background: transparent;
+            color: white;
+            font-size: 16px;
+        }
+
+        .search-box input::placeholder {
+            color: rgba(255,255,255,0.7);
+        }
+
+        .search-box button {
+            background: var(--rainbow-gradient);
+            background-size: 200% 200%;
+            animation: shimmer 2s linear infinite;
+            color: white;
+            border: none;
+            padding: 0 25px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        /* Section Title */
+        .section-title {
+            text-align: center;
+            margin: 60px 0 30px;
+            font-size: 32px;
+            color: var(--dark);
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 3px;
+            background: var(--rainbow-gradient);
+        }
+
+        /* Categories */
+        .categories {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 60px;
+        }
+
+        .category-card {
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            text-align: center;
+            padding: 20px;
+            border: 2px solid transparent;
+        }
+
+        .category-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            border-color: var(--primary);
+        }
+
+        .category-icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+            background: var(--rainbow-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .category-card h3 {
+            margin-bottom: 10px;
+        }
+
+        /* Dishes */
+        .dishes {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 60px;
+        }
+
+        .dish-card {
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .dish-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .dish-image {
+            height: 200px;
+            background-color: #ddd;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        .dish-image::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--rainbow-gradient);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .dish-card:hover .dish-image::after {
+            opacity: 0.2;
+        }
+
+        .dish-info {
+            padding: 20px;
+        }
+
+        .dish-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .dish-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .dish-price {
+            color: var(--tertiary);
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .dish-description {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .dish-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .rating {
+            color: var(--tertiary);
+        }
+
+        .add-to-cart {
+            background: var(--rainbow-gradient);
+            background-size: 200% 200%;
+            animation: shimmer 2s linear infinite;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: transform 0.3s;
+        }
+
+        .add-to-cart:hover {
+            transform: scale(1.05);
+        }
+
+        /* Offers */
+        .offers {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 60px;
+        }
+
+        .offer-card {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 15px;
+            padding: 30px;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 200px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .offer-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: var(--rainbow-gradient);
+            opacity: 0.1;
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .offer-card:nth-child(2) {
+            background: linear-gradient(135deg, var(--secondary), var(--tertiary));
+        }
+
+        .offer-card:nth-child(3) {
+            background: linear-gradient(135deg, var(--tertiary), var(--accent));
+            color: var(--dark);
+        }
+
+        .offer-title {
+            font-size: 22px;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .offer-description {
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Testimonials */
+        .testimonials {
+            background: var(--light);
+            padding: 60px 0;
+        }
+
+        .testimonial-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            border-left: 5px solid var(--rainbow-gradient);
+        }
+
+        .testimonial-text {
+            font-style: italic;
+            margin-bottom: 15px;
+            color: #666;
+        }
+
+        .testimonial-author {
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        /* Steps */
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+
+        .step {
+            text-align: center;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .step-number {
+            width: 60px;
+            height: 60px;
+            background: var(--rainbow-gradient);
+            background-size: 200% 200%;
+            animation: shimmer 2s linear infinite;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0 auto 20px;
+        }
+
+        .step:nth-child(2) .step-number {
+            background: linear-gradient(135deg, var(--secondary), var(--tertiary));
+        }
+
+        .step:nth-child(3) .step-number {
+            background: linear-gradient(135deg, var(--tertiary), var(--accent));
+            color: white;
+        }
+
+        .step h3 {
+            margin-bottom: 10px;
+        }
+
+        /* Menu Specific */
+        .menu-hero {
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            padding: 80px 0;
+            text-align: center;
+            position: relative;
+        }
+
+        .category-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            background: white;
+            border: 2px solid transparent;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            border-color: var(--primary);
+            background: var(--primary);
+            color: white;
+        }
+
+        .category {
+            display: none;
+        }
+
+        .category.active {
+            display: grid;
+        }
+
+        /* About Specific */
+        .about-hero {
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1414235077428-338989a2e8c0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80');
+            background-size: cover;
+            color: white;
+            padding: 100px 0;
+            text-align: center;
+            position: relative;
+        }
+
+        .about-hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .about-content {
+            padding: 60px 0;
+        }
+
+        .about-text {
+            font-size: 18px;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+
+        .feature-card {
+            text-align: center;
+            padding: 30px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .feature-icon {
+            font-size: 40px;
+            color: var(--rainbow-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 15px;
+            animation: pulse 2s infinite;
+        }
+
+        .feature-card h3 {
+            margin-bottom: 10px;
+        }
+
+        .team {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+        }
+
+        .team-member {
+            text-align: center;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .team-member img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin-bottom: 15px;
+            background: #ddd;
+        }
+
+        /* Contact Specific */
+        .contact-hero {
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80');
+            background-size: cover;
+            color: white;
+            padding: 100px 0;
+            text-align: center;
+            position: relative;
+        }
+
+        .contact-hero-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .contact-content {
+            padding: 60px 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+        }
+
+        .contact-info {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .contact-item i {
+            font-size: 24px;
+            color: var(--primary);
+            width: 40px;
+        }
+
+        .contact-form {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .contact-form h3 {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .contact-form input, .contact-form textarea {
+            margin-bottom: 15px;
+        }
+
+        .contact-form textarea {
+            height: 120px;
+            resize: vertical;
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--dark);
+            color: white;
+            padding: 60px 0 20px;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .footer-column h3 {
+            font-size: 18px;
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .footer-column h3::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 40px;
+            height: 2px;
+            background: var(--rainbow-gradient);
+            background-size: 200% 200%;
+            animation: shimmer 2s linear infinite;
+        }
+
+        .footer-column ul {
+            list-style: none;
+        }
+
+        .footer-column ul li {
+            margin-bottom: 10px;
+        }
+
+        .footer-column a {
+            color: #bbb;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-column a:hover {
+            color: var(--primary);
+        }
+
+        .social-icons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .social-icons a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            transition: all 0.3s;
+            border: 1px solid transparent;
+        }
+
+        .social-icons a:hover {
+            background: var(--rainbow-gradient);
+            background-size: 200% 200%;
+            animation: shimmer 2s linear infinite;
+            border-color: white;
+            transform: rotate(360deg);
+        }
+
+        .copyright {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #bbb;
+            font-size: 14px;
+        }
+
+        /* Toast Notification */
+        #toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transform: translateX(400px);
+            transition: transform 0.3s;
+            z-index: 1000;
+        }
+
+        #toast.show {
+            transform: translateX(0);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            nav ul {
+                gap: 15px;
+            }
+
+            .hero h2 {
+                font-size: 36px;
+            }
+
+            .hero p {
+                font-size: 18px;
+            }
+
+            .hero {
+                background-attachment: scroll;
+            }
+
+            .category-tabs {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        @media (max-width: 576px) {
+            nav ul {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .hero {
+                padding: 60px 0;
+            }
+
+            .hero h2 {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="header-container">
+                <div class="logo">
+                    <i class="fas fa-utensils"></i>
+                    <h1>FOODDAY</h1>
+                </div>
+                <nav>
+                    <ul>
+                        <li><a onclick="showPage('home')">Home</a></li>
+                        <li><a onclick="showPage('menu')">Menu</a></li>
+                        <li><a onclick="showPage('about')">About</a></li>
+                        <li><a onclick="showPage('contact')">Contact</a></li>
+                    </ul>
+                </nav>
+                <div class="header-actions">
+                    <div class="cart-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count">3</span>
+                    </div>
+                    <button class="btn btn-primary" onclick="openModal()">Sign Up</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Sign Up Modal -->
+    <div id="signupModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2 style="text-align: center; margin-bottom: 20px; color: var(--dark);">Sign Up for FOODDAY</h2>
+            <form id="signupForm">
+                <div class="form-group">
+                    <label for="name">Full Name:</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="phone">Phone Number:</label>
+                    <input type="tel" id="phone" name="phone" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Sign Up</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Home Page -->
+    <section id="home" class="page-section active">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="container">
+                <div class="hero-content">
+                    <h2>Delicious Food Delivered To Your Door</h2>
+                    <p>Order from your favorite restaurants and enjoy fresh meals at home</p>
+                    <div class="search-box">
+                        <input type="text" placeholder="Search for food or restaurants...">
+                        <button><i class="fas fa-search"></i></button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Categories Section -->
+        <section class="container">
+            <h2 class="section-title">Food Categories</h2>
+            <div class="categories">
+                <div class="category-card">
+                    <i class="fas fa-pizza-slice category-icon"></i>
+                    <h3>Pizza</h3>
+                    <p>Cheesy & Delicious</p>
+                </div>
+                <div class="category-card">
+                    <i class="fas fa-hamburger category-icon"></i>
+                    <h3>Burgers</h3>
+                    <p>Juicy & Tasty</p>
+                </div>
+                <div class="category-card">
+                    <i class="fas fa-ice-cream category-icon"></i>
+                    <h3>Desserts</h3>
+                    <p>Sweet Treats</p>
+                </div>
+                <div class="category-card">
+                    <i class="fas fa-mug-hot category-icon"></i>
+                    <h3>Drinks</h3>
+                    <p>Refreshing Beverages</p>
+                </div>
+                <div class="category-card">
+                    <i class="fas fa-drumstick-bite category-icon"></i>
+                    <h3>Chicken</h3>
+                    <p>Crispy & Flavorful</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Popular Dishes -->
+        <section class="container">
+            <h2 class="section-title">Popular Dishes</h2>
+            <div class="dishes">
+                <div class="dish-card">
+                    <div class="dish-image" style="background-image: url('https://cookingitalians.com/wp-content/uploads/2024/11/Margherita-Pizza.jpg');"></div>
+                    <div class="dish-info">
+                        <div class="dish-header">
+                            <h3 class="dish-title">Margherita Pizza</h3>
+                            <span class="dish-price">₹455</span>
+                        </div>
+                        <p class="dish-description">Classic pizza with tomato sauce, mozzarella, and fresh basil</p>
+                        <div class="dish-actions">
+                            <div class="rating">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star-half-alt"></i>
+                                <span>4.5</span>
+                            </div>
+                            <button class="add-to-cart">Add to Cart</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="dish-card">
+                    <div class="dish-image" style="background-image: url('https://images.unsplash.com/photo-1551782450-a2132b4ba21d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80');"></div>
+                    <div class="dish-info">
+                        <div class="dish-header">
+                            <h3 class="dish-title">Cheeseburger</h3>
+                            <span class="dish-price">₹299</span>
+                        </div>
+                        <p class="dish-description">Juicy beef patty with cheese, lettuce, tomato, and special sauce</p>
+                        <div class="dish-actions">
+                            <div class="rating">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="far fa-star"></i>
+                                <span>4.0</span>
+                            </div>
+                            <button class="add-to-cart">Add to Cart</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="dish-card">
+                    <div class="dish-image" style="background-image: url('https://images.unsplash.com/photo-1484980972926-edee96e0960d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80');"></div>
+                    <div class="dish-info">
+                        <div class="dish-header">
+                            <h3 class="dish-title">Caesar Salad</h3>
+                            <span class="dish-price">₹149</span>
+                        </div>
+                        <p class="dish-description">Fresh romaine lettuce with parmesan, croutons, and caesar dressing</p>
+                        <div class="dish-actions">
+                            <div class="rating">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <span>5.0</span>
+                            </div>
+                            <button class="add-to-cart">Add to Cart</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="dish-card">
+                    <div class="dish-image" style="background-image: url('https://static.vecteezy.com/system/resources/previews/014/214/134/non_2x/delicious-hot-and-crispy-fried-chicken-meat-free-photo.jpg');"></div>
+                    <div class="dish-info">
+                        <div class="dish-header">
+                            <h3 class="dish-title">Fried Chicken</h3>
+                            <span class="dish-price">₹149</span>
+                        </div>
+                        <p class="dish-description">Crispy golden fried chicken with signature spices</p>
+                        <div class="dish-actions">
+                            <div class="rating">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star-half-alt"></i>
+                                <i class="far fa-star"></i>
+                                <span>4.2</span>
+                            </div>
+                            <button class="add-to-cart">Add to Cart</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Special Offers -->
+        <section class="container">
+            <h2 class="section-title">Special Offers</h2>
+            <div class="offers">
+                <div class="offer-card">
+                    <h3 class="offer-title">Free Delivery</h3>
+                    <p class="offer-description">Get free delivery on orders over $25. Limited time offer!</p>
+                    <button class="btn btn-secondary">Order Now</button>
+                </div>
+                <div class="offer-card">
+                    <h3 class="offer-title">Family Bundle</h3>
+                    <p class="offer-description">Special family meal for 4 people at a discounted price</p>
+                    <button class="btn btn-primary">Order Now</button>
+                </div>
+                <div class="offer-card">
+                    <h3 class="offer-title">Weekend Special</h3>
+                    <p class="offer-description">Enjoy 20% off on all orders placed during weekends</p>
+                    <button class="btn btn-secondary">Order Now</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Testimonials -->
+        <section class="testimonials">
+            <div class="container">
+                <h2 class="section-title">What Our Customers Say</h2>
+                <div class="dishes" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
+                    <div class="testimonial-card">
+                        <p class="testimonial-text">"Amazing food and super fast delivery! FOODDAY is my go-to for quick meals."</p>
+                        <div class="testimonial-author">- Rishi MP</div>
+                    </div>
+                    <div class="testimonial-card">
+                        <p class="testimonial-text">"The variety is incredible, and the prices are unbeatable. Love the app too!"</p>
+                        <div class="testimonial-author">- Lokesh K</div>
+                    </div>
+                    <div class="testimonial-card">
+                        <p class="testimonial-text">"Fresh ingredients and delicious flavors. Highly recommend the pizza!"</p>
+                        <div class="testimonial-author">- Maaran </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- How It Works -->
+        <section class="container">
+            <h2 class="section-title">How It Works</h2>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>Choose Your Food</h3>
+                    <p>Browse our menu and select your favorite dishes</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>Place Your Order</h3>
+                    <p>Add items to your cart and proceed to checkout</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>Fast Delivery</h3>
+                    <p>Enjoy your meal delivered hot and fresh to your door</p>
+                </div>
+            </div>
+        </section>
+    </section>
+
+    <!-- Menu Page -->
+    <section id="menu" class="page-section">
+        <!-- Menu Hero -->
+        <section class="menu-hero">
+            <div class="container">
+                <div class="hero-content">
+                    <h2>Our Delicious Menu</h2>
+                    <p>Explore a wide variety of mouth-watering dishes</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Category Tabs -->
+        <section class="container">
+            <div class="category-tabs">
+                <button class="tab-btn active" onclick="showCategory('all')">All</button>
+                <button class="tab-btn" onclick="showCategory('pizza')">Pizza</button>
+                <button class="tab-btn" onclick="showCategory('burger')">Burgers</button>
+                <button class="tab-btn" onclick="showCategory('sides')">Side Dishes</button>
+                <button class="tab-btn" onclick="showCategory('desserts')">Desserts</button>
+                <button class="tab-btn" onclick="showCategory('drinks')">Drinks</button>
+                <button class="tab-btn" onclick="showCategory('biriyani')">Biriyani</button>
+            </div>
+        </section>
+
+        <!-- Dishes Sections -->
+        <section class="container">
+            <div id="pizza" class="dishes category">
+                <div class="dish-card">
+                    <div class="dish-image" style="background-image: url('https://cookingitalians.com/wp-content/uploads/2024/11/Margherita-Pizza.jpg');"></div>
+                    <div class="dish-info">
+                        <div class="dish-header">
+                            <h3 class="dish-title">Margherita Pizza</h3>
+                            <span class="dish-price">₹455</span>
+                        </div>
+                        <p class="dish-description">Classic pizza with tomato sauce, mozzarella, and fresh basil</p>
+                        <div class="dish-actions">
+                            <div class="rating">
+                                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+                                <span>4.5</span>
+                            </div>
+                            <button class="add-to-cart">Add to Cart</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="dish-card">
+                    <div class="dish-image" style="background-image: url('https://club.cooking/wp-content/uploads/2019/08/Pepperoni-Pizza-03-kvadrat.jpg');"></div>
+                    <div class="dish-info">
+                        <div class="dish-header">
+                            <h3 class="dish-title">Pepperoni Pizza</h3>
+                            <span class="dish-price">₹399</span>
+                        </div>
+                        <p class="dish-description">Spicy pepperoni slices on a bed of cheese and sauce</p>
+                        <div class="dish-actions">
+                            <div class="rating">
+                                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                                <span>5.0</span>
+                            </div>
+                            <button class="add-to-cart">Add to Cart</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="burger" class="dishes category">
+                <div class="dish-card">
+                    <div class="dish-image" style="background-image: url('https://images.unsplash.com/photo-1551782450-a2132b4ba21d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80');"></div>
+                    <div class="dish-info">
+                        <div class="dish-header">
+                            <h3 class="dish-title">Cheeseburger</h3>
+                            <span class="dish-price">₹299</span>
+                        </div>
+                        <p class="dish-description">Juicy beef patty with cheese, lettuce, tomato, and special sauce</p>
+                        <div class="dish-actions">
+                            <div class="rating">
+                                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i>
+                                <span>4.0</span>
+                            </div>
+                            <button class="add-to-cart">Add to Cart</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="dish-card">
+                    <div class="dish-image" style="background-image: url('https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80');"></div>
+                    <div class="dish-info">
+                        <div class="dish-header">
+                            <h3 class="dish-title">Veggie Burger</h3>
+                            <span class="dish-price">₹199</span>
+                        </div>
+                        <p class="dish-description">Fresh veggie patty with avocado, sprouts, and tangy sauce</p>
+                        <div class="dish-actions">
+                            <div class="rating">
+                                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i><i class="far fa-star"></i>
+                                <span>4.3</span>
+                            </div>
+                            <button class="add-to-cart">Add to Cart</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="sides" class="dishes category">
+                <div class="dish-card">
+                    <div class="dish-image" style="background-image: url('https://images.unsplash.com/photo-1484980972926-edee96e0960d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80');"></div>
+                    <div class="dish-info">
+                        <div class="dish-header">
+                            <h3 class="dish-title">Caesar Salad</h3>
+                            <span class="dish-price">₹149</span>
+                        </div>
+                        <p class="dish-description">Fresh romaine lettuce with parmesan, croutons, and caesar dressing</p>
+                        <div class="dish-actions">
+                            <div class="rating">
+                                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                                <span>5.0</span>
+                            </div>
+                            <button class="add-to-cart">Add to Cart</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="dish-card">
+                    <div class="dish-image" style="background-image: url('https://wallpapercave.com/wp/wp2148252.jpg');"></div>
+                    <div class="dish-info">
+                        <div class="dish-header">
+                            <h3 class="dish-title">French Fries</h3>
+                            <span class="dish-price">₹99</span>
+                        </div>
+                        <p class="dish-description">Crispy golden fries seasoned to perfection</p>
+                        <div class="dish-actions">
+                            <div class="rating">
+                                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i>
+                                <span>4.0</span>
+                            </div>
+                            <button class="add-to-cart">Add to Cart</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="desserts" class="dishes category">
+                <div class="dish-card">
+                    <div class="dish-image" style="background-image: url('https://images.unsplash.com/photo-1578985545062-69928b1d9587?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80');"></div>
+                    <div class="dish-info">
+                        <div class="dish-header">
+                            <h3 class="dish-title">Chocolate Cake</h3>
+                            <span class="dish-price">₹99</span>
+                        </div>
+                        <p class="dish-description">Rich chocolate cake with ganache frosting</p>
+                        <div class="dish-actions">
+                            <div class="rating">
+                                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+                                <span>4.7</span>
+                            </div>
+                            <button class="add-to-cart">Add to Cart</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="dish-card">
+                    <div class="dish-image" style="background-image: url('http://cdn2.simplysated.com/wp-content/uploads/2014/08/Homemade-Vanilla-Ice-Cream-22-1-P7270022.jpg');"></div>
+                    <div class="dish-info">
+                        <div class="dish-header">
+                            <h3 class="dish-title">Vanilla Ice Cream</h3>
+                            <span class="dish-price">₹80</span>
+                        </div>
+                        <p class="dish-description">Creamy vanilla ice cream with fresh toppings</p>
+                        <div class="dish-actions">
+                            <div class="rating">
+                                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                                <span>4.9</span>
+                            </div>
+                            <button class="add-to-cart">Add to Cart</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="drinks" class="dishes category">
+                <div class="dish-card">
+                    <div class="dish-image" style="background-image: url('http://www.baltana.com/files/wallpapers-3/Coca-Cola-HD-Wallpaper-11594.jpg');"></div>
+                    <div class="dish-info">
+                        <div class="dish-header">
+                            <h3 class="dish-title">Coke</h3>
+                            <span class="dish-price">₹49</span>
+                        </div>
+                        <p class="dish-description">Classic Coca-Cola, chilled and refreshing</p>
+                        <div class="dish-actions">
+                            <div class="rating">
+                                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i>
+                                <span>4.0</span>
+                            </div>
+                            <button class="add-to-cart">Add to Cart</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="dish-card">
+                    <div class="dish-image" style="background-image: url('https://s-i.huffpost.com/gen/3076364/images/o-LEMONADE-facebook.jpg');"></div>
+                    <div class="dish-info">
+                        <div class="dish-header">
+                            <h3 class="dish-title">Lemonade</h3>
+                            <span class="dish-price">₹69</span>
+                        </div>
+                        <p class="dish-description">Freshly squeezed lemonade with a hint of mint</p>
+                        <div class="dish-actions">
+                            <div class="rating">
+                                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i><i class="far fa-star"></i>
+                                <span>4.4</span>
+                            </div>
+                            <button class="add-to-cart">Add to Cart</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="biriyani" class="dishes category">
+                <div class="dish-card">
+                    <div class="dish-image" style="background-image: url('https://www.thespruceeats.com/thmb/XDBL9gA6A6nYWUdsRZ3QwH084rk=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/SES-chicken-biryani-recipe-7367850-hero-A-ed211926bb0e4ca1be510695c15ce111.jpg');"></div>
+                    <div class="dish-info">
+                        <div class="dish-header">
+                            <h3 class="dish-title">Chicken Biriyani</h3>
+                            <span class="dish-price">₹199</span>
+                        </div>
+                        <p class="dish-description">Aromatic basmati rice cooked with tender chicken and spices</p>
+                        <div class="dish-actions">
+                            <div class="rating">
+                                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                                <span>4.8</span>
+                            </div>
+                            <button class="add-to-cart">Add to Cart</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="dish-card">
+                    <div class="dish-image" style="background-image: url('https://www.dwarakaorganic.com/wp-content/uploads/2012/06/Veg-Biryani-Recipe.jpg');"></div>
+                    <div class="dish-info">
+                        <div class="dish-header">
+                            <h3 class="dish-title">Veg Biriyani</h3>
+                            <span class="dish-price">₹139</span>
+                        </div>
+                        <p class="dish-description">Flavorful vegetable biriyani with exotic spices</p>
+                        <div class="dish-actions">
+                            <div class="rating">
+                                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+                                <span>4.6</span>
+                            </div>
+                            <button class="add-to-cart">Add to Cart</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="all" class="dishes category active">
+                <!-- All categories will be shown here via JS -->
+            </div>
+        </section>
+    </section>
+
+    <!-- About Page -->
+    <section id="about" class="page-section">
+        <!-- About Hero -->
+        <section class="about-hero">
+            <div class="container">
+                <div class="about-hero-content">
+                    <h2>About FOODDAY</h2>
+                    <p>Your trusted partner in delicious food delivery since 2020</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Content -->
+        <section class="about-content container">
+            <div class="about-text">
+                <p>FOODDAY was founded with a simple mission: to bring the joy of great food right to your doorstep. From humble beginnings in a small kitchen, we've grown into a vibrant platform connecting food lovers with top restaurants across the city. Our commitment to quality, speed, and customer satisfaction has made us a favorite among thousands.</p>
+            </div>
+
+            <h2 class="section-title">Why Choose Us?</h2>
+            <div class="features">
+                <div class="feature-card">
+                    <i class="fas fa-truck-fast feature-icon"></i>
+                    <h3>Fast Delivery</h3>
+                    <p>Get your food hot and fresh in under 30 minutes.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-utensils feature-icon"></i>
+                    <h3>Wide Variety</h3>
+                    <p>From pizzas to biriyani, find everything you crave.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-shield-alt feature-icon"></i>
+                    <h3>Quality Guaranteed</h3>
+                    <p>We partner only with the best restaurants for top-notch meals.</p>
+                </div>
+            </div>
+
+            <h2 class="section-title">Our Team</h2>
+<div class="team">
+    <div class="team-member">
+        <img src="https://i.pinimg.com/736x/6e/7d/07/6e7d07314cbc0248f854c609a7e87bc2.jpg" alt="Rohan Kennedy">
+        <h3>Rohan Kennedy</h3>
+        <p>CEO & Founder</p>
+    </div>
+
+    <div class="team-member">
+        <img src="https://tse3.mm.bing.net/th/id/OIP.xaFnkNdalvRkysVedg3XWwHaJF?cb=12&rs=1&pid=ImgDetMain&o=7&rm=3" alt="Girija">
+        <h3>Girija</h3>
+        <p>Head Chef</p>
+    </div>
+
+    <div class="team-member">
+        <img src="https://tse2.mm.bing.net/th/id/OIP.rgwWwtYVcSqFbePByDJeGAHaJ3?cb=12&w=640&h=853&rs=1&pid=ImgDetMain&o=7&rm=3" alt="Jawagar">
+        <h3>Jawagar</h3>
+        <p>Managing Director</p>
+    </div>
+</div>
+
+        </section>
+    </section>
+
+    <!-- Contact Page -->
+    <section id="contact" class="page-section">
+        <!-- Contact Hero -->
+        <section class="contact-hero">
+            <div class="container">
+                <div class="contact-hero-content">
+                    <h2>Get In Touch</h2>
+                    <p>We're here to help! Reach out with any questions or feedback.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Content -->
+        <section class="contact-content container">
+            <div class="contact-info">
+                <h3 style="margin-bottom: 20px; color: var(--dark);">Contact Information</h3>
+                <div class="contact-item">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <p>123 Food Street, Delicious City, FC 12345</p>
+                </div>
+                <div class="contact-item">
+                    <i class="fas fa-phone"></i>
+                    <p>+91 7847706374</p>
+                </div>
+                <div class="contact-item">
+                    <i class="fas fa-envelope"></i>
+                    <p>info@foodday.com</p>
+                </div>
+                <div class="contact-item">
+                    <i class="fas fa-clock"></i>
+                    <p>Mon - Sun: 9:00 AM - 11:00 PM</p>
+                </div>
+            </div>
+
+            <form class="contact-form" id="contactForm">
+                <h3>Send Us a Message</h3>
+                <div class="form-group">
+                    <input type="text" placeholder="Your Name" required>
+                </div>
+                <div class="form-group">
+                    <input type="email" placeholder="Your Email" required>
+                </div>
+                <div class="form-group">
+                    <input type="tel" placeholder="Your Phone">
+                </div>
+                <div class="form-group">
+                    <textarea placeholder="Your Message" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Send Message</button>
+            </form>
+        </section>
+    </section>
+<!-- Cart Page -->
+<section id="cart" class="page-section">
+    <section class="hero" style="background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1606755962773-0d3d31e6cd1f?auto=format&fit=crop&w=1350&q=80'); background-size: cover; background-position: center; color: white; text-align: center; padding: 100px 0;">
+        <div class="container">
+            <h2>Your Cart</h2>
+            
+            <p>Review the items you’ve added before checkout</p>
+        </div>
+    </section>
+
+    <section class="container" style="padding: 60px 0;">
+        <h2 class="section-title">Items in Your Cart</h2>
+        <div id="cart-items" style="margin-bottom: 40px;"></div>
+
+        <div id="cart-summary" style="text-align: right; margin-top: 20px;">
+            <h3>Total: ₹<span id="cart-total">0</span></h3>
+            <button class="btn btn-primary" onclick="checkoutCart()">Checkout</button>
+            <button class="btn btn-secondary" onclick="clearCart()">Clear Cart</button>
+        </div>
+    </section>
+</section>
+
+<script>
+// ---------- CART PAGE SCRIPT ----------
+
+// Store cart items globally
+let cart = [];
+
+// Modify Add-to-Cart buttons to store items dynamically
+document.querySelectorAll('.add-to-cart').forEach(button => {
+    button.addEventListener('click', function() {
+        const dishCard = this.closest('.dish-card');
+        const name = dishCard.querySelector('.dish-title').innerText;
+        const price = parseInt(dishCard.querySelector('.dish-price').innerText.replace('₹', '').trim());
+
+        // Check if item already exists
+        const existing = cart.find(item => item.name === name);
+        if (existing) {
+            existing.quantity++;
+        } else {
+            cart.push({ name, price, quantity: 1 });
+        }
+
+        updateCartCount();
+        showToast(`${name} added to cart!`);
+    });
+});
+
+// Update cart count in header
+function updateCartCount() {
+    const countElement = document.querySelector('.cart-count');
+    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+    countElement.textContent = totalItems;
+}
+
+// Show toast notification
+function showToast(message) {
+    const toast = document.getElementById('toast');
+    toast.innerText = message;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+// Show Cart Page and populate items
+document.querySelector('.cart-icon').addEventListener('click', function() {
+    showPage('cart');
+    renderCartItems();
+});
+
+// Render cart items dynamically
+function renderCartItems() {
+    const cartItemsContainer = document.getElementById('cart-items');
+    const totalElement = document.getElementById('cart-total');
+    cartItemsContainer.innerHTML = '';
+
+    if (cart.length === 0) {
+        cartItemsContainer.innerHTML = '<p style="text-align:center; font-size:18px;">Your cart is empty 🛒</p>';
+        totalElement.textContent = '0';
+        return;
+    }
+
+    let total = 0;
+    cart.forEach(item => {
+        const subtotal = item.price * item.quantity;
+        total += subtotal;
+
+        const itemHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; background:white; padding:15px 20px; border-radius:10px; margin-bottom:10px; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+                <div>
+                    <h3 style="margin-bottom:5px;">${item.name}</h3>
+                    <p>Price: ₹${item.price} × ${item.quantity} = <strong>₹${subtotal}</strong></p>
+                </div>
+                <div>
+                    <button class="btn btn-secondary" style="padding:5px 10px;" onclick="changeQuantity('${item.name}', -1)">-</button>
+                    <button class="btn btn-secondary" style="padding:5px 10px;" onclick="changeQuantity('${item.name}', 1)">+</button>
+                </div>
+            </div>`;
+        cartItemsContainer.insertAdjacentHTML('beforeend', itemHTML);
+    });
+
+    totalElement.textContent = total;
+}
+
+// Change item quantity
+function changeQuantity(name, change) {
+    const item = cart.find(i => i.name === name);
+    if (item) {
+        item.quantity += change;
+        if (item.quantity <= 0) {
+            cart = cart.filter(i => i.name !== name);
+        }
+    }
+    renderCartItems();
+    updateCartCount();
+}
+
+// Clear all items
+function clearCart() {
+    if (confirm("Are you sure you want to clear your cart?")) {
+        cart = [];
+        renderCartItems();
+        updateCartCount();
+    }
+}
+
+// Checkout simulation
+function checkoutCart() {
+    if (cart.length === 0) {
+        alert("Your cart is empty!");
+        return;
+    }
+    let total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    alert(`Your total is ₹${total}. Proceeding to checkout...`);
+    cart = [];
+    renderCartItems();
+    updateCartCount();
+}
+</script>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>FOODDAY</h3>
+                    <p>Delivering delicious meals to satisfy your cravings since 2020.</p>
+                    <div class="social-icons">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a onclick="showPage('home')">Home</a></li>
+                        <li><a onclick="showPage('menu')">Menu</a></li>
+                        <li><a onclick="showPage('about')">About Us</a></li>
+                        <li><a onclick="showPage('contact')">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Contact Us</h3>
+                    <ul>
+                        <li><i class="fas fa-map-marker-alt"></i> 123 Food Street, City</li>
+                        <li><i class="fas fa-phone"></i>+91 7847706374</li>
+                        <li><i class="fas fa-envelope"></i> info@foodday.com</li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Newsletter</h3>
+                    <p>Subscribe to our newsletter for special offers and updates</p>
+                    <div class="search-box" style="background: rgba(255,255,255,0.1); border-radius: 30px; overflow: hidden; max-width: 250px;">
+                        <input type="text" placeholder="Your email..." style="background: transparent; color: white; border: none; padding: 10px;">
+                        <button style="background: var(--rainbow-gradient); background-size: 200% 200%; animation: shimmer 2s linear infinite; color: white; border: none; padding: 0 15px;"><i class="fas fa-paper-plane"></i></button>
+                    </div>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2025 FOODDAY. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast Notification -->
+    <div id="toast">Item added to cart! 🎉</div>
+
+    <script>
+        // Page Navigation
+        function showPage(pageId) {
+            const sections = document.querySelectorAll('.page-section');
+            sections.forEach(section => section.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+
+            if (pageId === 'menu') {
+                showCategory('all'); // Reset menu tabs
+            }
+        }
+
+        // Modal functions
+        function openModal() {
+            document.getElementById('signupModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('signupModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('signupModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+
+        // Sign up form submit
+        document.getElementById('signupForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+            alert(`Welcome, ${name}! We've sent a confirmation to ${email}. Phone: ${phone}`);
+            closeModal();
+            this.reset();
+        });
+
+        // Menu Tab functionality
+        function showCategory(category) {
+            const categories = document.querySelectorAll('#menu .category');
+            const tabs = document.querySelectorAll('.tab-btn');
+            categories.forEach(cat => cat.classList.remove('active'));
+            tabs.forEach(tab => tab.classList.remove('active'));
+
+            document.querySelector(`.tab-btn[onclick="showCategory('${category}')"]`).classList.add('active');
+
+            if (category === 'all') {
+                // Show all individual categories
+                const allCategories = ['pizza', 'burger', 'sides', 'desserts', 'drinks', 'biriyani'];
+                allCategories.forEach(catId => {
+                    document.getElementById(catId).style.display = 'grid';
+                });
+                document.getElementById('all').style.display = 'none';
+            } else {
+                // Hide all and show selected
+                const allCategories = ['pizza', 'burger', 'sides', 'desserts', 'drinks', 'biriyani'];
+                allCategories.forEach(catId => {
+                    if (catId === category) {
+                        document.getElementById(catId).style.display = 'grid';
+                    } else {
+                        document.getElementById(catId).style.display = 'none';
+                    }
+                });
+                document.getElementById('all').style.display = 'none';
+            }
+        }
+
+        // Cart functionality
+        document.querySelectorAll('.add-to-cart').forEach(button => {
+            button.addEventListener('click', function() {
+                const countElement = document.querySelector('.cart-count');
+                let count = parseInt(countElement.textContent);
+                count++;
+                countElement.textContent = count;
+                
+                const toast = document.getElementById('toast');
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3000);
+            });
+        });
+
+        // Search functionality (home)
+        const homeSearchBtn = document.querySelector('#home .search-box button');
+        if (homeSearchBtn) {
+            homeSearchBtn.addEventListener('click', function() {
+                const query = document.querySelector('#home .search-box input').value;
+                if (query) {
+                    alert(`Searching for: ${query}`);
+                }
+            });
+        }
+
+        // Contact form
+        document.getElementById('contactForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Thank you for your message! We\'ll get back to you soon.');
+            this.reset();
+        });
+    </script>
+</body>
+</html>
